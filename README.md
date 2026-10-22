@@ -4,7 +4,9 @@
 
 [**▶ Live demo**](https://beebopcat.github.io/aetherglass/) · [**Play on caseyshingledecker.com**](https://caseyshingledecker.com/demos/aetherglass/) · [**Source**](https://github.com/Beebopcat/aetherglass)
 
-[![Aetherglass Plaza: an afternoon fantasy plaza with numbered place markers and the Explore this place list.](docs/media/01.webp)](https://beebopcat.github.io/aetherglass/)
+[![Aetherglass promotional cover art.](docs/media/design-cover.webp)](https://beebopcat.github.io/aetherglass/)
+
+*Promotional cover art; gameplay screenshots appear below.*
 
 > **Status:** the game files are being added to this repository. Until `index.html` is at the repository root, the GitHub Pages link above has nothing to show; the same game is playable on caseyshingledecker.com.
 
