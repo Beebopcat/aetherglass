@@ -1,3 +1,4 @@
+import {iconElement} from './interface-icons.mjs';
 import {cities,scenes,characters,lore,challenges} from './world.mjs';
 import {SAVE_KEY,freshState,normalizeState,travel,reward,restoreCrystal,checkAnswer,newMemory,flipCard,nextObjective} from './engine.mjs';
 import {RealmMusic} from './music.mjs';
@@ -15,7 +16,7 @@ function closePanel(){clearTimers();panel.close();challenge=null;memory=null;seq
 function openPanel(title,kicker){clearTimers();if(!panel.open){lastFocus=document.activeElement;panel.showModal();}$('#panel-title').textContent=title;$('#panel-kicker').textContent=kicker;$('#panel-body').replaceChildren();$('#close-panel').focus();return $('#panel-body');}
 function updateProgress(){
  $('#seal-count').textContent=`${state.seals.length} / 3`;$('#objective').textContent=nextObjective(state);
- $('#seal-icons').replaceChildren(...Object.entries(challenges).map(([id,c])=>{const n=node('span',({artificer:'⚒',wayfarer:'⌁',harbour:'⚓'})[id],'seal'+(state.seals.includes(id)?' earned':''));n.title=c.seal+(state.seals.includes(id)?' earned':' not yet earned');n.setAttribute('role','img');n.setAttribute('aria-label',n.title);return n;}));
+ $('#seal-icons').replaceChildren(...Object.entries(challenges).map(([id,c])=>{const n=node('span',undefined,'seal'+(state.seals.includes(id)?' earned':''));n.append(iconElement(({artificer:'game-hammer',wayfarer:'game-wave',harbour:'game-anchor'})[id]));n.title=c.seal+(state.seals.includes(id)?' earned':' not yet earned');n.setAttribute('role','img');n.setAttribute('aria-label',n.title);return n;}));
  $('#scene-picture').classList.toggle('restored',state.restored);save();
 }
 function render(){
@@ -48,7 +49,7 @@ function readLore(id){const [title,text]=lore[id],b=openPanel(title,'FIELD NOTES
 function showJournal(){
  const body=openPanel('A light between cities','YOUR FIELD JOURNAL');body.append(node('p',nextObjective(state)));
  const list=node('ul',undefined,'journal-list');
- Object.entries(challenges).forEach(([id,c])=>{const li=node('li');li.append(node('span',(state.seals.includes(id)?'✓  ':'◇  ')+c.seal),button(state.seals.includes(id)?'Revisit':'Go there',()=>go(c.place)));list.append(li);});body.append(list);
+ Object.entries(challenges).forEach(([id,c])=>{const li=node('li'),mark=node('span',undefined,'journal-seal');mark.append(iconElement(state.seals.includes(id)?'check':'game-diamond'),document.createTextNode(c.seal));mark.setAttribute('role','img');mark.setAttribute('aria-label',c.seal+(state.seals.includes(id)?' earned':' not yet earned'));li.append(mark,button(state.seals.includes(id)?'Revisit':'Go there',()=>go(c.place)));list.append(li);});body.append(list);
  body.append(node('p',`${state.stamps.length} / 2 Goldwheel stamps · ${state.restored?'Aetherglass restored':'Crystal waiting'}`,'panel-muted'));
  body.append(node('strong',`${state.visited.length} / ${Object.keys(scenes).length} places discovered`,'visited-count'));
  const places=node('div',undefined,'journal-places');state.visited.forEach(id=>places.append(button(scenes[id].name,()=>go(id))));body.append(places);
@@ -56,9 +57,10 @@ function showJournal(){
  const actions=node('div',undefined,'dialog-actions');actions.append(button('Keep exploring',closePanel,'primary'),button('Start a new journey',confirmReset));body.append(actions);
 }
 function confirmReset(){const b=openPanel('Start a new journey?','LOCAL PROGRESS');b.append(node('p','This clears only this hub’s seals, stamps, and visited places in this browser.'));const row=node('div',undefined,'dialog-actions');row.append(button('Keep my progress',showJournal,'primary'),button('Reset this journey',()=>{state=freshState();closePanel();render();notify('A fresh journey begins in Goldspire.');}));b.append(row);}
+function completionBadge(){const n=node('div',undefined,'complete-badge');n.setAttribute('aria-hidden','true');n.append(iconElement('highlight'));return n;}
 function crystal(){
  const b=openPanel(state.restored?'The Aetherglass is alight':'The Aetherglass','A LIGHT BETWEEN CITIES');
- if(state.restored){b.append(node('div','✦','complete-badge'),node('p','Three guilds, three lessons, one connected realm. The light is restored. The cities remain open, and both Goldwheel tables are ready whenever you return.'));}
+ if(state.restored){b.append(completionBadge(),node('p','Three guilds, three lessons, one connected realm. The light is restored. The cities remain open, and both Goldwheel tables are ready whenever you return.'));}
  else if(state.seals.length<3){b.append(node('p',`The crystal holds ${state.seals.length} of three study seals. Each guild has one practical task. Collect all three, then return here to finish the journey.`),node('p',nextObjective(state)));}
  else if(state.scene!=='goldspire'){b.append(node('p','All three seals are ready. The great crystal in Goldspire is waiting.'),button('Return to Goldspire',()=>go('goldspire'),'primary'));}
  else{b.append(node('p','Artificer, Wayfarer, Harbour. Your three seals fit into the crystal’s silver frame.'),button('Light the Aetherglass',()=>{restoreCrystal(state);updateProgress();crystal();notify('The Aetherglass is restored. Your journey is saved.');},'primary'));}
@@ -71,16 +73,16 @@ function renderQuestion(){
  const options=node('div',undefined,'options'),feedback=node('div');feedback.setAttribute('aria-live','polite');
  q.options.forEach((text,i)=>options.append(button(text,()=>{
   const correct=checkAnswer(id,index,i);feedback.className='answer-feedback'+(correct?' correct':'');feedback.replaceChildren(node('strong',correct?'That’s right.':'Try another choice.'),node('p',correct?q.why:'Think about the job described in the question. You can also ask Idris or the Tip Owl for a hint.'));
-  if(correct){options.querySelectorAll('button').forEach(x=>x.disabled=true);const next=button(index+1===c.questions.length?'Collect the seal':'Next check',()=>{if(index+1===c.questions.length){reward(state,'seal',id);updateProgress();challenge=null;const done=openPanel(c.seal,'GUILD CHALLENGE COMPLETE');done.append(node('div','✦','complete-badge'),node('p','Seal recorded in your journal. '+nextObjective(state)),button('Return to the scene',closePanel,'primary'));}else{challenge.index++;renderQuestion();}},'primary');feedback.append(next);next.focus();}
+  if(correct){options.querySelectorAll('button').forEach(x=>x.disabled=true);const next=button(index+1===c.questions.length?'Collect the seal':'Next check',()=>{if(index+1===c.questions.length){reward(state,'seal',id);updateProgress();challenge=null;const done=openPanel(c.seal,'GUILD CHALLENGE COMPLETE');done.append(completionBadge(),node('p','Seal recorded in your journal. '+nextObjective(state)),button('Return to the scene',closePanel,'primary'));}else{challenge.index++;renderQuestion();}},'primary');feedback.append(next);next.focus();}
  })));b.append(options,feedback);
 }
-const emblems={sun:['☀','Sun'],moon:['☾','Moon'],star:['✦','Star'],leaf:['❧','Leaf'],wave:['≋','Wave'],crystal:['◇','Crystal']};
+const emblems={sun:['sun','Sun'],moon:['moon','Moon'],star:['highlight','Star'],leaf:['game-leaf','Leaf'],wave:['game-wave','Wave'],crystal:['crystal','Crystal']};
 function startPairs(){memory=newMemory();openPanel('Crystal pairs','GOLDWHEEL · MEMORY TABLE');drawPairs();}
 function drawPairs(focusIndex){
  if(!memory)return;const b=$('#panel-body');b.replaceChildren(node('p','Find six matching pairs. Turn over two cards at a time. Take as long as you like.'));
  const status=node('p',`${memory.matched.length/2} / 6 pairs · ${memory.turns} turns`,'panel-muted');status.setAttribute('aria-live','polite');b.append(status);
  const grid=node('div',undefined,'memory-grid');
- memory.cards.forEach((symbol,i)=>{const visible=memory.open.includes(i)||memory.matched.includes(i),matched=memory.matched.includes(i);const card=button('',()=>{const result=flipCard(memory,i);if(!result.accepted)return;drawPairs(i);if(result.match===false)later(()=>{if(memory){const focused=[...$('#panel-body').querySelectorAll('.memory-card')].indexOf(document.activeElement);memory.open=[];drawPairs(focused<0?undefined:focused);}},950);if(result.complete){reward(state,'stamp','pairs');updateProgress();const done=node('p','Table complete. Your Crystal Pairs stamp is in the journal.');done.setAttribute('role','status');$('#panel-body').append(done);}},'memory-card'+(visible?' revealed':'')+(matched?' matched':''));card.setAttribute('aria-label',`Card ${i+1}: ${visible?emblems[symbol][1]:'face down'}${matched?' matched':''}`);card.disabled=matched;card.append(node('span',visible?emblems[symbol][0]:'✧'),node('small',visible?emblems[symbol][1]:String(i+1).padStart(2,'0')));grid.append(card);});b.append(grid);
+ memory.cards.forEach((symbol,i)=>{const visible=memory.open.includes(i)||memory.matched.includes(i),matched=memory.matched.includes(i);const card=button('',()=>{const result=flipCard(memory,i);if(!result.accepted)return;drawPairs(i);if(result.match===false)later(()=>{if(memory){const focused=[...$('#panel-body').querySelectorAll('.memory-card')].indexOf(document.activeElement);memory.open=[];drawPairs(focused<0?undefined:focused);}},950);if(result.complete){reward(state,'stamp','pairs');updateProgress();const done=node('p','Table complete. Your Crystal Pairs stamp is in the journal.');done.setAttribute('role','status');$('#panel-body').append(done);}},'memory-card'+(visible?' revealed':'')+(matched?' matched':''));card.setAttribute('aria-label',`Card ${i+1}: ${visible?emblems[symbol][1]:'face down'}${matched?' matched':''}`);card.disabled=matched;card.append(iconElement(visible?emblems[symbol][0]:'game-diamond'),node('small',visible?emblems[symbol][1]:String(i+1).padStart(2,'0')));grid.append(card);});b.append(grid);
  const actions=node('div',undefined,'dialog-actions');actions.append(button('New board',startPairs),button('Leave the table',closePanel));b.append(actions);if(Number.isInteger(focusIndex))(grid.children[focusIndex]?.disabled?grid.querySelector('button:not(:disabled)')||actions.firstChild:grid.children[focusIndex])?.focus();
 }
 const lamps=[['Amber','#efc779'],['Jade','#99d7ba'],['Azure','#94cbed'],['Rose','#dca8d8']];

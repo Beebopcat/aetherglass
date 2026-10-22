@@ -1,0 +1,17 @@
+/* Exactly 110% of baseline heading sizes, in the original responsive rule order. */
+h1{font-size:2.2em}h2{font-size:1.65em}h3{font-size:1.287em}h4{font-size:1.1em}h5{font-size:.913em}h6{font-size:.737em}
+.brand{font-size:calc(24px * 1.1)}
+.place-heading h1{font-size:calc(clamp(25px, 2.4vw, 36px) * 1.1)}
+.quest-card h2{font-size:calc(23px * 1.1)}
+dialog h2{font-size:calc(29px * 1.1)}
+@media (max-width: 650px) {
+.brand{font-size:calc(20px * 1.1)}
+.place-heading h1{font-size:calc(28px * 1.1)}
+.quest-card h2{font-size:calc(21px * 1.1)}
+dialog h2{font-size:calc(27px * 1.1)}
+}
+@media (min-width: 651px) {
+.brand{font-size:calc(20px * 1.1)}
+.place-heading h1{font-size:calc(24px * 1.1)}
+.quest-card h2{font-size:calc(21px * 1.1)}
+}

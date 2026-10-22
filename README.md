@@ -8,8 +8,6 @@
 
 *Promotional cover art; gameplay screenshots appear below.*
 
-> **Status:** the game files are being added to this repository. Until `index.html` is at the repository root, the GitHub Pages link above has nothing to show; the same game is playable on caseyshingledecker.com.
-
 ## What it is
 
 An interactive hub for the restored realm. Travel between original cities, enter buildings, talk to characters, and play three guild study challenges and the Goldwheel games.
